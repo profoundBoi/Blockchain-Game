@@ -6,56 +6,102 @@ using System.Collections;
 public class UIManager : MonoBehaviour
 {
     [Header("Buttons")]
-    public Button connectWalletButton;
-    public Button claimItemButton;
+    public Button guestButton;
+    public Button emailButton;
+    public Button walletButton;
+    public Button claimButton;
 
     [Header("Text")]
     public TextMeshProUGUI statusText;
+    public TextMeshProUGUI addressText;
+
+    [Header("Email Input")]
+    public TMP_InputField emailInput;
 
     void Start()
     {
-        connectWalletButton.onClick.AddListener(OnConnectWalletClicked);
-        claimItemButton.onClick.AddListener(OnClaimItemClicked);
-        claimItemButton.interactable = false;
-        statusText.text = "Not connected";
+        guestButton.onClick.AddListener(OnGuestClicked);
+        emailButton.onClick.AddListener(OnEmailClicked);
+        walletButton.onClick.AddListener(OnWalletClicked);
+        claimButton.onClick.AddListener(OnClaimClicked);
+
+        claimButton.interactable = false;
+        statusText.text = "Choose how to connect";
+        addressText.text = "";
+
+        StartCoroutine(InitializeAdmin());
     }
 
-    void OnConnectWalletClicked()
+    IEnumerator InitializeAdmin()
     {
-        StartCoroutine(ConnectWalletCoroutine());
+        var task = BlockchainManager.Instance.InitializeAdmin();
+        yield return new WaitUntil(() => task.IsCompleted);
+
+        if (task.IsFaulted)
+            Debug.LogError("Admin init failed: " + task.Exception);
+        else
+            Debug.Log("Admin ready");
     }
 
-    IEnumerator ConnectWalletCoroutine()
+    void OnGuestClicked()
+    {
+        StartCoroutine(ConnectCoroutine("guest"));
+    }
+
+    void OnEmailClicked()
+    {
+        if (string.IsNullOrEmpty(emailInput.text))
+        {
+            statusText.text = "Please enter an email";
+            return;
+        }
+        StartCoroutine(ConnectCoroutine("email"));
+    }
+
+    void OnWalletClicked()
+    {
+        StartCoroutine(ConnectCoroutine("wallet"));
+    }
+
+    IEnumerator ConnectCoroutine(string method)
     {
         statusText.text = "Connecting...";
-        connectWalletButton.interactable = false;
+        SetButtonsInteractable(false);
 
-        var task = BlockchainManager.Instance.ConnectWallet();
+        System.Threading.Tasks.Task task = null;
+
+        if (method == "guest")
+            task = BlockchainManager.Instance.ConnectAsGuest();
+        else if (method == "email")
+            task = BlockchainManager.Instance.ConnectWithEmail(emailInput.text);
+        else if (method == "wallet")
+            task = BlockchainManager.Instance.ConnectWithWallet();
+
         yield return new WaitUntil(() => task.IsCompleted);
 
         if (task.IsFaulted)
         {
             statusText.text = "Connection failed!";
             Debug.LogError(task.Exception);
+            SetButtonsInteractable(true);
         }
         else
         {
-            statusText.text = "Wallet connected!";
-            claimItemButton.interactable = true;
+            statusText.text = "Connected!";
+            addressText.text = "Address: " + BlockchainManager.Instance.GetPlayerAddress();
+            claimButton.interactable = true;
         }
-
-        connectWalletButton.interactable = true;
     }
 
-    void OnClaimItemClicked()
+    void OnClaimClicked()
     {
-        StartCoroutine(ClaimItemCoroutine());
+        StartCoroutine(ClaimCoroutine());
     }
 
-    IEnumerator ClaimItemCoroutine()
+    IEnumerator ClaimCoroutine()
     {
         statusText.text = "Claiming item...";
-        claimItemButton.interactable = false;
+        claimButton.interactable = false;
 
         var task = BlockchainManager.Instance.ClaimItem();
         yield return new WaitUntil(() => task.IsCompleted);
@@ -70,7 +116,13 @@ public class UIManager : MonoBehaviour
             statusText.text = "Item claimed!";
         }
 
+        claimButton.interactable = true;
+    }
 
-        claimItemButton.interactable = true;
+    void SetButtonsInteractable(bool state)
+    {
+        guestButton.interactable = state;
+        emailButton.interactable = state;
+        walletButton.interactable = state;
     }
 }
