@@ -12,10 +12,7 @@ namespace WebGLSupport
         InputField input;
         RebuildChecker checker;
 
-        public bool ReadOnly
-        {
-            get { return input.readOnly; }
-        }
+        public bool ReadOnly { get { return input.readOnly; } }
 
         public string text
         {
@@ -27,8 +24,7 @@ namespace WebGLSupport
         {
             get
             {
-                if (!input.placeholder)
-                    return "";
+                if (!input.placeholder) return "";
                 var text = input.placeholder.GetComponent<Text>();
                 return text ? text.text : "";
             }

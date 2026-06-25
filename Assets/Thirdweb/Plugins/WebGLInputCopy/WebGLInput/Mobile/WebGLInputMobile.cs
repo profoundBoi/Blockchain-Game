@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices; // for DllImport
-using AOT;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Runtime.InteropServices; // for DllImport
+using AOT;
+using System;
 
 namespace WebGLSupport
 {
@@ -21,10 +21,7 @@ namespace WebGLSupport
         /// ID を割り振り
         /// </summary>
         /// <returns></returns>
-        public static int WebGLInputMobileRegister(Action<int> OnTouchEnd)
-        {
-            return 0;
-        }
+        public static int WebGLInputMobileRegister(Action<int> OnTouchEnd) { return 0; }
 
         public static void WebGLInputMobileOnFocusOut(int id, Action<int> OnFocusOut) { }
 #endif
@@ -50,8 +47,7 @@ namespace WebGLSupport
         /// <param name="eventData"></param>
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (id != -1)
-                return;
+            if (id != -1) return;
             id = WebGLInputMobilePlugin.WebGLInputMobileRegister(OnTouchEnd);
             instances[id] = this;
         }
@@ -66,7 +62,7 @@ namespace WebGLSupport
 
         static IEnumerator RegisterOnFocusOut(int id)
         {
-            yield return null; // wait one frame.
+            yield return null;  // wait one frame.
             WebGLInputMobilePlugin.WebGLInputMobileOnFocusOut(id, OnFocusOut);
         }
 
@@ -79,7 +75,7 @@ namespace WebGLSupport
 
         static IEnumerator ExecFocusOut(int id)
         {
-            yield return null; // wait one frame.
+            yield return null;  // wait one frame.
             var @this = instances[id];
             @this.GetComponent<WebGLInput>().DeactivateInputField();
             // release
@@ -88,3 +84,4 @@ namespace WebGLSupport
         }
     }
 }
+

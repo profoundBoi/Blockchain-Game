@@ -1,6 +1,19 @@
 var WebGLInput = {
     $instances: [],
     WebGLInputInit : function() {
+        // use WebAssembly.Table : makeDynCall
+        // when enable. dynCall is undefined
+        if(typeof dynCall === "undefined")
+        {
+            // make Runtime.dynCall to undefined
+            Runtime = { dynCall : undefined }
+        }
+        else
+        {
+            // Remove the `Runtime` object from "v1.37.27: 12/24/2017"
+            // if Runtime not defined. create and add functon!!
+            if(typeof Runtime === "undefined") Runtime = { dynCall : dynCall }
+        }
     },
     WebGLInputCreate: function (canvasId, x, y, width, height, fontsize, text, placeholder, isMultiLine, isPassword, isHidden, isMobile) {
 
@@ -99,7 +112,7 @@ var WebGLInput = {
                     input.setSelectionRange(start + 1, start + 1);
                     input.oninput();	// call oninput to exe ValueChange function!!
                 } else {
-                    {{{ makeDynCall("vii", "cb") }}}(id, e.shiftKey ? -1 : 1);
+                    (!!Runtime.dynCall) ? Runtime.dynCall("vii", cb, [id, e.shiftKey ? -1 : 1]) : {{{ makeDynCall("vii", "cb") }}}(id, e.shiftKey ? -1 : 1);
                 }
             }
         });
@@ -111,13 +124,13 @@ var WebGLInput = {
     WebGLInputOnFocus: function (id, cb) {
         var input = instances[id];
         input.onfocus = function () {
-            {{{ makeDynCall("vi", "cb") }}}(id);
+            (!!Runtime.dynCall) ? Runtime.dynCall("vi", cb, [id]) : {{{ makeDynCall("vi", "cb") }}}(id);
         };
     },
     WebGLInputOnBlur: function (id, cb) {
         var input = instances[id];
         input.onblur = function () {
-            {{{ makeDynCall("vi", "cb") }}}(id);
+            (!!Runtime.dynCall) ? Runtime.dynCall("vi", cb, [id]) : {{{ makeDynCall("vi", "cb") }}}(id);
         };
     },
     WebGLInputIsFocus: function (id) {
@@ -130,7 +143,7 @@ var WebGLInput = {
             var bufferSize = lengthBytesUTF8(returnStr) + 1;
             var buffer = _malloc(bufferSize);
             stringToUTF8(returnStr, buffer, bufferSize);
-            {{{ makeDynCall("vii", "cb") }}}(id, buffer);
+            (!!Runtime.dynCall) ? Runtime.dynCall("vii", cb, [id, buffer]) : {{{ makeDynCall("vii", "cb") }}}(id, buffer);
         };
     },
     WebGLInputOnEditEnd:function(id, cb){
@@ -140,7 +153,7 @@ var WebGLInput = {
             var bufferSize = lengthBytesUTF8(returnStr) + 1;
             var buffer = _malloc(bufferSize);
             stringToUTF8(returnStr, buffer, bufferSize);
-            {{{ makeDynCall("vii", "cb") }}}(id, buffer);
+            (!!Runtime.dynCall) ? Runtime.dynCall("vii", cb, [id, buffer]) : {{{ makeDynCall("vii", "cb") }}}(id, buffer);
         };
     },
     WebGLInputOnKeyboardEvent:function(id, cb){
@@ -154,7 +167,7 @@ var WebGLInput = {
                 var shift = e.shiftKey ? 1 : 0;
                 var ctrl = e.ctrlKey ? 1 : 0;
                 var alt = e.altKey ? 1 : 0;
-                {{{ makeDynCall("viiiiiii", "cb") }}}(id, mode, key, code, shift, ctrl, alt);
+                (!!Runtime.dynCall) ? Runtime.dynCall("viiiiiii", cb, [id, mode, key, code, shift, ctrl, alt]) : {{{ makeDynCall("viiiiiii", "cb") }}}(id, mode, key, code, shift, ctrl, alt);
             }
         }
         input.addEventListener('keydown', function(e) { func(1, e); });

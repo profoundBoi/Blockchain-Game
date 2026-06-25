@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Numerics;
+using System.Threading.Tasks;
 using Thirdweb;
 using Thirdweb.Unity;
-using System.Threading.Tasks;
-using System.Numerics;
+using UnityEngine;
+
 
 public class BlockchainManager : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class BlockchainManager : MonoBehaviour
     private ThirdwebContract contract;
     private IThirdwebWallet wallet;
     private string playerWalletAddress;
+
+    [Header("Admin Settings")]
+    [SerializeField] private string adminPrivateKey = "";
 
     public static BlockchainManager Instance;
 
@@ -31,19 +35,22 @@ public class BlockchainManager : MonoBehaviour
         }
     }
 
-    // Call this to connect the players wallet
     public async Task ConnectWallet()
     {
+        // Connect as admin using private key
         var walletOptions = new WalletOptions(
-            provider: WalletProvider.InAppWallet,
-            chainId: 80002,
-            inAppWalletOptions: new InAppWalletOptions(authprovider: AuthProvider.Google)
+            provider: WalletProvider.PrivateKeyWallet,
+            chainId: 80002
         );
 
-        wallet = await ThirdwebManager.Instance.ConnectWallet(walletOptions);
+        // Override with admin key
+        wallet = await PrivateKeyWallet.Create(
+            ThirdwebManager.Instance.Client,
+            adminPrivateKey
+        );
 
         playerWalletAddress = await wallet.GetAddress();
-        Debug.Log("Wallet connected: " + playerWalletAddress);
+        Debug.Log("Admin wallet connected: " + playerWalletAddress);
 
         contract = await ThirdwebManager.Instance.GetContract(
             contractAddress,
@@ -53,7 +60,6 @@ public class BlockchainManager : MonoBehaviour
         Debug.Log("Contract loaded!");
     }
 
-    // Call this when player collects an item
     public async Task ClaimItem()
     {
         if (contract == null)
@@ -67,17 +73,19 @@ public class BlockchainManager : MonoBehaviour
         var result = await contract.Write(
             wallet,
             "claim",
-            0,
-            playerWalletAddress,
-            tokenId,
-            1,
-            new object[] { }
+            0,                          // value in wei
+            playerWalletAddress,        // receiver
+            tokenId,                    // tokenId
+            new BigInteger(1),          // quantity
+            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // currency (native)
+            new BigInteger(0),          // pricePerToken
+            new object[] { new byte[0], new BigInteger(0), new BigInteger(0), "0x0000000000000000000000000000000000000000" }, // allowlistProof
+            new byte[0]                 // data
         );
 
         Debug.Log("Item claimed! Transaction: " + result.TransactionHash);
     }
 
-    // Check how many items the player owns
     public async Task<string> GetPlayerBalance()
     {
         if (contract == null) return "0";
