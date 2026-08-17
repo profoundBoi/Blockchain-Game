@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -9,7 +10,6 @@ public class UIManager : MonoBehaviour
     public Button guestButton;
     public Button emailButton;
     public Button walletButton;
-    public Button claimButton;
 
     [Header("Text")]
     public TextMeshProUGUI statusText;
@@ -23,9 +23,7 @@ public class UIManager : MonoBehaviour
         guestButton.onClick.AddListener(OnGuestClicked);
         emailButton.onClick.AddListener(OnEmailClicked);
         walletButton.onClick.AddListener(OnWalletClicked);
-        claimButton.onClick.AddListener(OnClaimClicked);
 
-        claimButton.interactable = false;
         statusText.text = "Choose how to connect";
         addressText.text = "";
 
@@ -87,36 +85,11 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            statusText.text = "Connected!";
+            statusText.text = "Connected! Loading game...";
             addressText.text = "Address: " + BlockchainManager.Instance.GetPlayerAddress();
-            claimButton.interactable = true;
+            yield return new WaitForSeconds(1.5f);
+            SceneManager.LoadScene("Game");
         }
-    }
-
-    void OnClaimClicked()
-    {
-        StartCoroutine(ClaimCoroutine());
-    }
-
-    IEnumerator ClaimCoroutine()
-    {
-        statusText.text = "Claiming item...";
-        claimButton.interactable = false;
-
-        var task = BlockchainManager.Instance.ClaimItem();
-        yield return new WaitUntil(() => task.IsCompleted);
-
-        if (task.IsFaulted)
-        {
-            statusText.text = "Claim failed!";
-            Debug.LogError(task.Exception);
-        }
-        else
-        {
-            statusText.text = "Item claimed!";
-        }
-
-        claimButton.interactable = true;
     }
 
     void SetButtonsInteractable(bool state)
