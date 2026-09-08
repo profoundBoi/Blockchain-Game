@@ -23018,7 +23018,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4f0dd2e9c41c140b020cf8ef0dceba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyItem
-  keyID: 1
+  keyID: 2
 --- !u!136 &1095151655
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -32995,8 +32995,9 @@ MonoBehaviour:
   requiredKeys:
   - 1
   - 2
+  - 3
   gateObject: {fileID: 1527098365}
-  openHeight: 3
+  openHeight: 6
   openSpeed: 3
 --- !u!65 &1527098362
 BoxCollider:
@@ -35026,7 +35027,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4f0dd2e9c41c140b020cf8ef0dceba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyItem
-  keyID: 1
+  keyID: 3
 --- !u!136 &1623807677
 CapsuleCollider:
   m_ObjectHideFlags: 0
