@@ -90,6 +90,7 @@ public class GameUIManager : MonoBehaviour
 
             yield return new WaitForSeconds(2f);
             claimPanel.SetActive(false);
+            GameManager.Instance.EndGame();
         }
     }
 
